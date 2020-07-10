@@ -1,6 +1,6 @@
 # slexphp/json-serialization
 
-Object wrappers for PHP's ext-json functions.
+Wrappers for PHP's ext-json functions.
 
 ## Requirements
 
