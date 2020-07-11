@@ -1,15 +1,10 @@
 {
 	"name": "slexphp/json-serialization",
-	"repositories": [{
-		"type": "git",
-		"url": "https://github.com/slepic/slexphp-serialization-contracts.git"
-	}],
-	"minimum-stability": "dev",
-	"prefer-stable": true,
+	"license": "MIT",
 	"require": {
 		"php": ">=7.4",
 		"ext-json": "*",
-		"slexphp/serialization-contracts": "dev-master"
+		"slexphp/serialization-contracts": "^1.0"
 	},
 	"autoload": {
 		"psr-4": {
