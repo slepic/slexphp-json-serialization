@@ -33,7 +33,7 @@ class JsonDecoderBuilder
         return ($this->options & \JSON_BIGINT_AS_STRING) !== 0;
     }
 
-    public function setBigIntAsString(bool $bigIntAsString): void
+    public function setBigIntAsString(bool $bigIntAsString = true): void
     {
         if ($bigIntAsString) {
             $this->options |= \JSON_BIGINT_AS_STRING;
