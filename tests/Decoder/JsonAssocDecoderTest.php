@@ -1,23 +1,24 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Slexphp\Tests\Serialization\Json\Decoder;
 
 use PHPUnit\Framework\TestCase;
-use Slexphp\Serialization\Json\Decoder\JsonDecoder;
 use Slexphp\Serialization\Contracts\Decoder\DecodeExceptionInterface;
 use Slexphp\Serialization\Contracts\Decoder\DecoderInterface;
+use Slexphp\Serialization\Json\Decoder\JsonAssocDecoder;
 
-final class JsonDecoderTest extends TestCase
+final class JsonAssocDecoderTest extends TestCase
 {
     public function testImplements(): void
     {
-        $decoder = new JsonDecoder();
+        $decoder = new JsonAssocDecoder();
         self::assertInstanceOf(DecoderInterface::class, $decoder);
     }
 
     /**
      * @param string $value
-     * @param bool|null $assoc
      * @param int|null $depth
      * @param int|null $options
      *
@@ -25,12 +26,11 @@ final class JsonDecoderTest extends TestCase
      */
     public function testDecodeSuccess(
         string $value,
-        ?bool $assoc = null,
         ?int $depth = null,
         ?int $options = null
     ): void {
-        $expectation = \json_decode($value, $assoc ?? false, $depth ?? 512, $options ?? 0);
-        $decoder = new JsonDecoder($assoc, $depth, $options);
+        $expectation = \json_decode($value, true, $depth ?? 512, $options ?? 0);
+        $decoder = new JsonAssocDecoder($depth, $options);
         $result = $decoder->decode($value);
         if (\is_object($expectation)) {
             self::assertEquals($expectation, $result);
@@ -44,16 +44,13 @@ final class JsonDecoderTest extends TestCase
         return [
             ['{}'],
             ['{"x":"y"}'],
-            ['[[[]]]', true, 4],
-            ['true'],
-            ['"string"', true, null, \JSON_THROW_ON_ERROR],
+            ['[[[]]]', 4],
         ];
     }
 
     /**
      * @param string $value
      * @param int $expectCode
-     * @param bool|null $assoc
      * @param int|null $depth
      * @param int|null $options
      *
@@ -62,11 +59,10 @@ final class JsonDecoderTest extends TestCase
     public function testDecodeFailure(
         string $value,
         int $expectCode,
-        ?bool $assoc = null,
         ?int $depth = null,
         ?int $options = null
     ): void {
-        $decoder = new JsonDecoder($assoc, $depth, $options);
+        $decoder = new JsonAssocDecoder($depth, $options);
 
         try {
             $result = $decoder->decode($value);
@@ -75,7 +71,7 @@ final class JsonDecoderTest extends TestCase
             self::assertSame($expectCode, $e->getCode());
 
             $previous = $e->getPrevious();
-            if ($options & \JSON_THROW_ON_ERROR) {
+            if ($expectCode !== 0 && $options & \JSON_THROW_ON_ERROR) {
                 self::assertInstanceOf(\JsonException::class, $previous);
                 self::assertSame($previous->getMessage(), $e->getMessage());
                 self::assertSame($previous->getCode(), $e->getCode());
@@ -89,10 +85,12 @@ final class JsonDecoderTest extends TestCase
     {
         return [
             ['{', \JSON_ERROR_SYNTAX],
-            ['{', \JSON_ERROR_SYNTAX, true],
-            ['{', \JSON_ERROR_SYNTAX, false, null, \JSON_THROW_ON_ERROR],
-            ['[[[[]]]]', \JSON_ERROR_DEPTH, null, 4],
-            ['[[[[]]]]', \JSON_ERROR_DEPTH, null, 4, \JSON_THROW_ON_ERROR],
+            ['{', \JSON_ERROR_SYNTAX],
+            ['{', \JSON_ERROR_SYNTAX, null, \JSON_THROW_ON_ERROR],
+            ['[[[[]]]]', \JSON_ERROR_DEPTH, 4],
+            ['[[[[]]]]', \JSON_ERROR_DEPTH, 4, \JSON_THROW_ON_ERROR],
+            ['true', 0],
+            ['"string"', 0, null, \JSON_THROW_ON_ERROR],
         ];
     }
 }

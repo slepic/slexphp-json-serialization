@@ -21,11 +21,11 @@ class JsonDecoder implements DecoderInterface
         $this->options = $options ?? 0;
     }
 
-    public function decode(string $json)
+    public function decode(string $value)
     {
         try {
             /** @var string|int|float|array|\stdClass|null $result */
-            $result = \json_decode($json, $this->assoc, $this->depth, $this->options);
+            $result = \json_decode($value, $this->assoc, $this->depth, $this->options);
         } catch (\JsonException $e) {
             throw new DecodeException($e->getMessage(), (int) $e->getCode(), $e);
         }
